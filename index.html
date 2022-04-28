@@ -20,6 +20,10 @@
             }
             refresh();
         }
+
+        function reset() {
+            ls.forEach(e => e.value = "");
+        }
         async function submit() {
             refresh();
             const grid = [];
@@ -132,6 +136,7 @@
         </tr>
     </table>
     <input type="button" value="提交" id="submit" onclick="submit()">
+    <input type="button" value="清空" id="reset" onclick="reset()">
     <br>
     <div style="display: none">status: <div id="status" style="display: inline"></div></div>
     <div>期待收益: <div id="payout" style="display: inline"></div></div>
