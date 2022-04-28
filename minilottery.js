@@ -33,7 +33,7 @@ function hash(grid) {
  */
 function calcRevealAction(grid) {
     const h = hash(grid);
-    if(cache[h]) {
+    if (cache[h]) {
         return cache[h];
     }
     const revealed = grid.filter(c => c !== 0).length;
@@ -43,13 +43,13 @@ function calcRevealAction(grid) {
     const unfilledNumbers = getUnfilledNumbers(grid);
     const unfilledPositions = [];
     for (const i in grid) {
-        if(grid[i] === 0) {
+        if (grid[i] === 0) {
             unfilledPositions.push(i);
         }
     }
     let maxTile = 0;
     let maxOutcome = -Infinity;
-    for(const p of unfilledPositions) {
+    for (const p of unfilledPositions) {
         const allPossibilities = unfilledNumbers.map((v) => {
             const g = [...grid];
             g[p] = v;
@@ -59,7 +59,7 @@ function calcRevealAction(grid) {
             ops++;
             return acc + calcRevealAction(curr).outcome;
         }, 0) / allPossibilities.length;
-        if(expected > maxOutcome) {
+        if (expected > maxOutcome) {
             maxOutcome = expected;
             maxTile = p;
         }
@@ -77,7 +77,7 @@ function calcRevealAction(grid) {
  */
 function calcPickAction(grid) {
     const h = hash(grid);
-    if(cache[h]) {
+    if (cache[h]) {
         return cache[h];
     }
     const allPossibilities = getAllPossibilities(grid);
