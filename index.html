@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="cache.js"></script>
+    <script src="minilottery.js"></script>
+    <script>
+        const cache = prevCache;
+        const ls = [];
+        const vs = []
+
+        function init() {
+            for(let i = 0; i <= 8; i++) {
+                ls.push(document.getElementById("l" + i));
+            }
+            for(let i = 0; i <= 7; i++) {
+                vs.push(document.getElementById("v" + i));
+            }
+            refresh();
+        }
+        async function submit() {
+            refresh();
+            const grid = [];
+            for(let i = 0; i <= 8; i++) {
+                const e = document.getElementById("l" + i);
+                const t = e.value;
+                const v = parseInt(t);
+                if(isNaN(v)) {
+                    grid.push(0);
+                } else {
+                    grid.push(v);
+                }
+            }
+            document.getElementById("status").textContent = "Calculating..."
+            document.getElementById("submit").disabled = true;
+            const calcResult = calculate(grid);
+            calcResult.then((v) => {
+                document.getElementById("payout").textContent = v.outcome.toFixed(4);
+
+                if(v.tile) {
+                    document.getElementById("l" + v.tile).style.borderColor = "red";
+                } else {
+                    document.getElementById("v" + v.vector).style.color = "red";
+                }
+                document.getElementById("status").textContent = "Done";
+                document.getElementById("submit").disabled = false;
+            })
+
+        }
+
+        function downloadCache() {
+            function saveJSON(data, filename){
+
+                if(!data) {
+                    console.error('No data')
+                    return;
+                }
+
+                if(!filename) filename = 'console.json'
+
+                if(typeof data === "object"){
+                    data = JSON.stringify(data, undefined, 4)
+                }
+
+                var blob = new Blob([data], {type: 'text/json'}),
+                    e    = document.createEvent('MouseEvents'),
+                    a    = document.createElement('a')
+
+                a.download = filename
+                a.href = window.URL.createObjectURL(blob)
+                a.dataset.downloadurl =  ['text/json', a.download, a.href].join(':')
+                e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
+                a.dispatchEvent(e)
+            }
+
+            saveJSON(cache, "cache.JSON");
+        }
+        function refresh() {
+            ls.forEach((e) => {
+                e.style.borderColor = "lightgray";
+            });
+            vs.forEach((e) => {
+                e.style.color = "black";
+            });
+        }
+    </script>
+    <title>Calculator</title>
+</head>
+<body onload="init()">
+    <table>
+        <tr>
+            <th><div id="v3">↘</div></th>
+            <th><div id="v4">↓</div></th>
+            <th><div id="v5">↓</div></th>
+            <th><div id="v6">↓</div></th>
+            <th><div id="v7">↙</div></th>
+        </tr>
+        <tr>
+            <th><div id="v2">→</div></th>
+            <th><label for="l6"><input type="text" id="l6"></label></th>
+            <th><label for="l7"><input type="text" id="l7"></label></th>
+            <th><label for="l8"><input type="text" id="l8"></label></th>
+            <th></th>
+        </tr>
+        <tr>
+            <th><div id="v1">→</div></th>
+            <th><label for="l3"><input type="text" id="l3"></label></th>
+            <th><label for="l4"><input type="text" id="l4"></label></th>
+            <th><label for="l5"><input type="text" id="l5"></label></th>
+            <th></th>
+        </tr>
+        <tr>
+            <th><div id="v0">→</div></th>
+            <th><label for="l0"><input type="text" id="l0"></label></th>
+            <th><label for="l1"><input type="text" id="l1"></label></th>
+            <th><label for="l2"><input type="text" id="l2"></label></th>
+            <th></th>
+        </tr>
+    </table>
+    <input type="button" value="submit" id="submit" onclick="submit()">
+    <br>
+    <div>status: <div id="status" style="display: inline"></div></div>
+    <div>expected payout: <div id="payout" style="display: inline"></div></div>
+    <input type="button" value="download cache" onclick="downloadCache()" style="display: none">
+</body>
+</html>
