@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <script src="cache.js"></script>
     <script src="minilottery.js"></script>
     <script>
+
+        const error_enter = "请在1-4个格子内输入数字"
         const cache = prevCache;
         const ls = [];
         const vs = []
@@ -21,6 +23,7 @@
         async function submit() {
             refresh();
             const grid = [];
+            let count = 0;
             for(let i = 0; i <= 8; i++) {
                 const e = document.getElementById("l" + i);
                 const t = e.value;
@@ -29,7 +32,12 @@
                     grid.push(0);
                 } else {
                     grid.push(v);
+                    count ++;
                 }
+            }
+            if(count < 1 || count > 4) {
+                alert(error_enter);
+                return;
             }
             document.getElementById("status").textContent = "Calculating..."
             document.getElementById("submit").disabled = true;
@@ -62,7 +70,7 @@
                     data = JSON.stringify(data, undefined, 4)
                 }
 
-                var blob = new Blob([data], {type: 'text/json'}),
+                const blob = new Blob([data], {type: 'text/json'}),
                     e    = document.createEvent('MouseEvents'),
                     a    = document.createElement('a')
 
@@ -117,10 +125,10 @@
             <th></th>
         </tr>
     </table>
-    <input type="button" value="submit" id="submit" onclick="submit()">
+    <input type="button" value="提交" id="submit" onclick="submit()">
     <br>
-    <div>status: <div id="status" style="display: inline"></div></div>
-    <div>expected payout: <div id="payout" style="display: inline"></div></div>
+    <div style="display: none">status: <div id="status" style="display: inline"></div></div>
+    <div>期待收益: <div id="payout" style="display: inline"></div></div>
     <input type="button" value="download cache" onclick="downloadCache()" style="display: none">
 </body>
 </html>
