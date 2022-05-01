@@ -1,20 +1,7 @@
-function revealAction(grid, pos) {
-    const unfilledNumbers = getUnfilledNumbers(grid);
-    return unfilledNumbers.map(n => {
-        const g = [...grid];
-        g[pos] = n;
-    });
-}
-
-let ops = 0;
-
-async function calculate(grid) {
-    ops = 0;
+function calculate(grid) {
     const revealed = grid.filter(c => c !== 0).length;
     if (revealed >= 4) return calcPickAction(grid);
-    const result = calcRevealAction(grid);
-    console.log(ops);
-    return result;
+    return calcRevealAction(grid);
 }
 
 function hash(grid) {
@@ -56,7 +43,6 @@ function calcRevealAction(grid) {
             return g;
         });
         const expected = allPossibilities.reduce((acc, curr) => {
-            ops++;
             return acc + calcRevealAction(curr).outcome;
         }, 0) / allPossibilities.length;
         if (expected > maxOutcome) {
@@ -85,7 +71,6 @@ function calcPickAction(grid) {
     let maxVector = 0;
     for (let v = 0; v <= 7; v++) {
         const expected = allPossibilities.reduce((acc, curr) => {
-            ops++;
             return acc + getPayout(getVector(v, curr));
         }, 0) / allPossibilities.length;
         if (expected > maxExpected) {
@@ -146,27 +131,30 @@ function getVector(vector, grid) {
          1→    x3  x4  x5
          0→    x0  x1  x2
      */
-    switch (vector) {
-        case 0:
-            return grid[0] + grid[1] + grid[2];
-        case 1:
-            return grid[3] + grid[4] + grid[5];
-        case 2:
-            return grid[6] + grid[7] + grid[8];
-        case 3:
-            return grid[6] + grid[4] + grid[2];
-        case 4:
-            return grid[0] + grid[3] + grid[6];
-        case 5:
-            return grid[1] + grid[4] + grid[7];
-        case 6:
-            return grid[2] + grid[5] + grid[8];
-        case 7:
-            return grid[0] + grid[4] + grid[8];
-        default:
-            return 0;
-    }
+    return getVectorGrids(vector).reduce((acc, curr) => acc + grid[curr], 0);
+}
 
+function getVectorGrids(v) {
+    switch (v) {
+        case 0:
+            return [0, 1, 2];
+        case 1:
+            return [3, 4, 5];
+        case 2:
+            return [6, 7, 8];
+        case 3:
+            return [6, 4, 2];
+        case 4:
+            return [0, 3, 6];
+        case 5:
+            return [1, 4, 7];
+        case 6:
+            return [2, 5, 8];
+        case 7:
+            return [0, 4, 8];
+        default:
+            return [];
+    }
 }
 
 
@@ -237,3 +225,48 @@ function permute(permutation) {
     }
     return result;
 }
+
+// test game
+
+function makeGrid() {
+    const grid = [];
+    const allNums = [1,2,3,4,5,6,7,8,9];
+    for(let i = 0; i < 9; i++) {
+        const x = Math.floor(Math.random() * allNums.length)
+        const n = allNums[x];
+        allNums.splice(x, 1);
+        grid.push(n);
+    }
+    return grid;
+}
+
+class Game {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.grid = makeGrid();
+        this.displayGrid = [0,0,0,0,0,0,0,0,0];
+        const randomGrid = Math.floor(Math.random() * 9);
+        this.display(randomGrid);
+        return randomGrid;
+    }
+
+    display(pos) {
+        this.displayGrid[pos] = this.grid[pos];
+    }
+
+    displayAllGrids() {
+        this.displayGrid = this.grid;
+    }
+
+    isFinal() {
+        return this.displayGrid.filter(e => e !== 0).length === 4;
+    }
+
+    payout(v) {
+        return getPayout(getVector(v, this.grid));
+    }
+}
+

@@ -15,7 +15,7 @@
     <script src="cache.js"></script>
     <script src="minilottery.js"></script>
     <script>
-
+        // Calculator
         const error_enter = "请在1-4个格子内输入数字";
         const error_range = "请输入1-9的数字";
         const error_repeat = "请不要输入重复的数字"
@@ -24,6 +24,16 @@
         const vs = []
 
         function init() {
+            calculatorInit();
+            gameInit();
+            let d = "";
+            for(let i = 6; i <= 24; i++){
+                d += `${i}: ${getPayout(i)}\n`;
+            }
+            document.getElementById("scores").textContent = d;
+        }
+
+        function calculatorInit() {
             for (let i = 0; i <= 8; i++) {
                 ls.push(document.getElementById("l" + i));
             }
@@ -38,7 +48,7 @@
             refresh();
         }
 
-        async function submit() {
+        function submit() {
             refresh();
             const grid = [];
             let count = 0;
@@ -65,21 +75,29 @@
                 alert(error_enter);
                 return;
             }
-            document.getElementById("status").textContent = "Calculating..."
             document.getElementById("submit").disabled = true;
             const calcResult = calculate(grid);
-            calcResult.then((v) => {
-                document.getElementById("payout").textContent = v.outcome.toFixed(4);
+            document.getElementById("payout").textContent = calcResult.outcome.toFixed(4);
 
-                if (v.tile) {
-                    document.getElementById("l" + v.tile).style.borderColor = "red";
-                } else {
-                    document.getElementById("v" + v.vector).style.color = "red";
-                }
-                document.getElementById("status").textContent = "Done";
-                document.getElementById("submit").disabled = false;
-            })
+            if (calcResult.tile) {
+                document.getElementById("l" + calcResult.tile).style.borderColor = "red";
+            } else {
+                document.getElementById("v" + calcResult.vector).style.color = "red";
+            }
+            document.getElementById("submit").disabled = false;
 
+        }
+
+        function toggleScore() {
+            const score = document.getElementById("scores");
+            const toggle = document.getElementById("scoreToggle");
+            if(score.style.display === "none") {
+                score.style.display = "block";
+                toggle.value = "隐藏得分表";
+            } else {
+                score.style.display = "none";
+                toggle.value = "显示得分表";
+            }
         }
 
         function downloadCache() {
@@ -118,16 +136,101 @@
                 e.style.color = "black";
             });
         }
+
+        // Game:
+        const game = new Game();
+        const buttons = [];
+        const vectors = [];
+
+        function gameInit() {
+            for(let i = 0; i <= 8; i++) {
+                const button = document.getElementById("lg" + i);
+                button.onclick = function () {
+                    clickTile(button, i);
+                };
+                buttons.push(button);
+            }
+            for(let i = 0; i <= 7; i++) {
+                const vector = document.getElementById("vg" + i);
+                vectors.push(vector);
+            }
+            resetGame();
+        }
+
+        function clickTile(button, i) {
+            button.disabled = true;
+            game.display(i);
+            if(game.isFinal()) {
+                buttons.forEach(b => b.disabled = true);
+                vectors.forEach((v, i) => enableVector(v, i));
+            }
+            displayGame();
+        }
+
+        function disableVector(v) {
+            v.style.color = "gray"
+            v.onclick = undefined;
+            v.style.cursor = "none";
+        }
+
+        function enableVector(v, i) {
+            v.style.color = "black"
+            v.onclick = function(){clickVector(v, i)};
+            v.style.cursor = "pointer"
+        }
+
+        function clickVector(v, i) {
+            vectors.forEach(e => disableVector(e));
+            v.style.color = "red";
+            game.displayAllGrids();
+            displayGame();
+            const grids = getVectorGrids(i);
+            grids.forEach(e => buttons[e].style.color = "red");
+            document.getElementById("gameResult").textContent = game.payout(i).toString();
+        }
+
+        function resetGame() {
+            const randomGrid = game.reset();
+            displayGame();
+            buttons.forEach(b => {
+                b.disabled = false;
+                b.style.color = "black";
+            });
+            vectors.forEach(v => {
+                v.onclick = undefined;
+                v.style.color = "gray";
+            });
+            buttons[randomGrid].disabled = true;
+            document.getElementById("gameResult").textContent = "";
+        }
+
+        function displayGame() {
+            for(let i = 0; i <= 8; i++) {
+                const gridValue = game.displayGrid[i];
+                if(gridValue === 0) {
+                    buttons[i].value = "";
+                } else {
+                    buttons[i].value = gridValue.toString();
+                }
+
+            }
+        }
+
     </script>
     <style>
         .t {
             width: 40px;
         }
+        .bg {
+            width: 40px;
+        }
+
     </style>
     <title>Calculator</title>
 </head>
 <body onload="init()">
 <h3>FF14 微彩工具</h3>
+<h4>计算</h4>
 <table>
     <tr>
         <th>
@@ -177,13 +280,67 @@
 <input type="button" value="提交" id="submit" onclick="submit()">
 <input type="button" value="清空" id="reset" onclick="reset()">
 <br>
-<div style="display: none">status:
-    <div id="status" style="display: inline"></div>
-</div>
 <div>期待收益:
     <div id="payout" style="display: inline"></div>
 </div>
 <input type="button" value="download cache" onclick="downloadCache()" style="display: none">
+<br>
+<br>
+<h4>模拟</h4>
+<table>
+    <tr>
+        <th>
+            <div class="vg" id="vg3">↘</div>
+        </th>
+        <th>
+            <div class="vg" id="vg4">↓</div>
+        </th>
+        <th>
+            <div class="vg" id="vg5">↓</div>
+        </th>
+        <th>
+            <div class="vg" id="vg6">↓</div>
+        </th>
+        <th>
+            <div class="vg" id="vg7">↙</div>
+        </th>
+    </tr>
+    <tr>
+        <th>
+            <div class="vg" id="vg2">→</div>
+        </th>
+        <th><input class="bg" type="button" id="lg6"></th>
+        <th><input class="bg" type="button" id="lg7"></th>
+        <th><input class="bg" type="button" id="lg8"></th>
+        <th></th>
+    </tr>
+    <tr>
+        <th>
+            <div class="vg" id="vg1">→</div>
+        </th>
+        <th><input class="bg" type="button" id="lg3"></th>
+        <th><input class="bg" type="button" id="lg4"></th>
+        <th><input class="bg" type="button" id="lg5"></th>
+        <th></th>
+    </tr>
+    <tr>
+        <th>
+            <div class="vg" id="vg0">→</div>
+        </th>
+        <th><input class="bg" type="button" id="lg0"></th>
+        <th><input class="bg" type="button" id="lg1"></th>
+        <th><input class="bg" type="button" id="lg2"></th>
+        <th></th>
+    </tr>
+</table>
+<input type="button" value="重置" id="resetGame" onclick="resetGame()">
+<div>得分: <div id="gameResult" style="display: inline"></div></div>
+<br>
+
+<input type="button" value="显示得分表" onclick="toggleScore()" id="scoreToggle">
+<pre style="display: none" id="scores"></pre>
+
+<br>
 <br>
 <a href="https://github.com/cookiesjuice/ft1/issues">报告bug</a>
 </body>
