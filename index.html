@@ -12,14 +12,14 @@
         gtag('config', 'G-759VJ1SM1T');
     </script>
 
-    <script src="cache.js"></script>
+    <script src="model.js"></script>
     <script src="minilottery.js"></script>
     <script>
         // Calculator
         const error_enter = "请在1-4个格子内输入数字";
         const error_range = "请输入1-9的数字";
         const error_repeat = "请不要输入重复的数字"
-        const cache = prevCache;
+        const model = initialModel;
         const ls = [];
         const vs = []
 
@@ -98,34 +98,6 @@
                 score.style.display = "none";
                 toggle.value = "显示得分表";
             }
-        }
-
-        function downloadCache() {
-            function saveJSON(data, filename) {
-
-                if (!data) {
-                    console.error('No data')
-                    return;
-                }
-
-                if (!filename) filename = 'console.json'
-
-                if (typeof data === "object") {
-                    data = JSON.stringify(data, undefined, 4)
-                }
-
-                const blob = new Blob([data], {type: 'text/json'}),
-                    e = document.createEvent('MouseEvents'),
-                    a = document.createElement('a')
-
-                a.download = filename
-                a.href = window.URL.createObjectURL(blob)
-                a.dataset.downloadurl = ['text/json', a.download, a.href].join(':')
-                e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
-                a.dispatchEvent(e)
-            }
-
-            saveJSON(cache, "cache.JSON");
         }
 
         function refresh() {
@@ -283,7 +255,6 @@
 <div>期待收益:
     <div id="payout" style="display: inline"></div>
 </div>
-<input type="button" value="download cache" onclick="downloadCache()" style="display: none">
 <br>
 <br>
 <h4>模拟</h4>

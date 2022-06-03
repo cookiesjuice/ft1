@@ -4,7 +4,7 @@ function calculate(grid) {
     return calcRevealAction(grid);
 }
 
-function hash(grid) {
+function name(grid) {
     let h = "";
     for (const i in grid) {
         h += grid[i];
@@ -19,9 +19,9 @@ function hash(grid) {
  * @return {{tile: number, outcome: number}}
  */
 function calcRevealAction(grid) {
-    const h = hash(grid);
-    if (cache[h]) {
-        return cache[h];
+    const h = name(grid);
+    if (model[h]) {
+        return model[h];
     }
     const revealed = grid.filter(c => c !== 0).length;
     if (revealed >= 4) {
@@ -51,7 +51,7 @@ function calcRevealAction(grid) {
         }
     }
     const result = {tile: maxTile, outcome: maxOutcome}
-    cache[h] = result;
+    model[h] = result;
     return result;
 }
 
@@ -62,9 +62,9 @@ function calcRevealAction(grid) {
  * @return {{vector: number, outcome: number}}
  */
 function calcPickAction(grid) {
-    const h = hash(grid);
-    if (cache[h]) {
-        return cache[h];
+    const h = name(grid);
+    if (model[h]) {
+        return model[h];
     }
     const allPossibilities = getAllPossibilities(grid);
     let maxExpected = -Infinity;
@@ -80,7 +80,7 @@ function calcPickAction(grid) {
     }
 
     const result = {vector: maxVector, outcome: maxExpected}
-    cache[h] = result;
+    model[h] = result;
     return result;
 }
 
